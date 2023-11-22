@@ -455,15 +455,13 @@ const pets = [
 // GENERATE RANDOM OBJECT
 let randomObj;
 function randomObject() {
-  let randomIndex = Math.floor(Math.random() * 51);
+  let randomIndex = Math.floor(Math.random() * 50);
   randomObj = pets[randomIndex];
-  console.log(randomObj);
   return randomObj;
 }
-// randomObject();
 
 let endGame;
-
+let isAlive = true;
 // RENDER SAME PET OBJECT EVERY 30 SECS
 function render() {
   randomObject();
@@ -471,7 +469,7 @@ function render() {
   // create container for each pet details
   const petContainer = document.createElement("div");
   petContainer.id = "pet-container";
-  petContainer.className = "alive";
+  // petContainer.className = "alive";
   mainContainer.appendChild(petContainer);
   // create emoji
   const emojiDiv = document.createElement("div");
@@ -485,6 +483,7 @@ function render() {
   petContainer.appendChild(heading);
   // create hunger label
   const labelHunger = document.createElement("p");
+  labelHunger.className = "hungerText";
   labelHunger.textContent = "Hunger:";
   petContainer.appendChild(labelHunger);
   // create meter hunger bar
@@ -493,9 +492,11 @@ function render() {
   petContainer.appendChild(hungerDiv);
   const hungerMeter = document.createElement("div");
   hungerMeter.className = "hungry";
+  hungerMeter.style.width = "0px";
   hungerDiv.appendChild(hungerMeter);
   // create love label
   const labelLove = document.createElement("p");
+  labelLove.className = "loveText";
   labelLove.textContent = "Love:";
   petContainer.appendChild(labelLove);
   // create meter love bar
@@ -511,6 +512,34 @@ function render() {
   petContainer.appendChild(button);
   document.querySelector("button");
 
+  const epitaph = document.createElement("p");
+  epitaph.style.color = "white";
+  epitaph.textContent = `"${randomObj.epitaph}"`;
+
+  document.querySelector("#emoji");
+  emojiDiv.addEventListener("mouseover", function () {
+    console.log("hover");
+    emojiDiv.style.cursor =
+      'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="pink" width="28" height="28"><path d="M12 21.35l-1.45-1.32C5.4 14.25 2 11.25 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C16.09 3.81 17.76 3 19.5 3 22.58 3 25 5.42 25 8.5c0 2.75-3.4 5.75-8.55 11.54L12 21.35z"/></svg>\') 12 12, auto';
+  });
+
+  let epitaphAdded = false;
+  function updatePetStatus() {
+    if ((hunger === 100 || love === 0) && !isAlive && !epitaphAdded) {
+      petContainer.classList.add("died");
+      emojiDiv.classList.add("emoji-died");
+      labelHunger.style.display = "none";
+      hungerDiv.style.display = "none";
+      hungerMeter.style.display = "none";
+      labelLove.style.display = "none";
+      loveDiv.style.display = "none";
+      loveMeter.style.display = "none";
+      button.style.display = "none";
+      petContainer.appendChild(epitaph);
+      epitaphAdded = true;
+    }
+  }
+
   // function to run hunger and love meters
   let hunger = 0;
   let interval = setInterval(function () {
@@ -520,10 +549,13 @@ function render() {
     hunger = hunger + 1;
     if (hunger === 100) {
       clearInterval(interval);
-      // activate the psuedo element?
+
+      isAlive = false;
+      updatePetStatus();
     }
     hungerMeter.style.width = `${hunger}px`;
   }, 1000);
+
   let love = 100;
   setInterval(function () {
     emojiDiv.addEventListener("click", function () {
@@ -532,7 +564,9 @@ function render() {
     love = love - 1;
     if (love === 0) {
       clearInterval(interval);
-      // replace old class with new class "died"
+
+      isAlive = false;
+      updatePetStatus();
     }
     loveMeter.style.width = `${love}px`;
   }, 1000);
@@ -540,4 +574,10 @@ function render() {
 
 render();
 
-// setInterval(render, 5000);
+endGame = setInterval(function () {
+  if (!isAlive) {
+    clearInterval(endGame);
+  } else {
+    render();
+  }
+}, 30000);
